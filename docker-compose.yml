@@ -1,0 +1,36 @@
+version: '3.6'
+services:
+    app:
+        image: jetbrains/teamcity-server:latest
+        restart: unless-stopped
+        depends_on:
+            - db
+        networks:
+            - net
+        ports:
+            - "8111:8111"
+        volumes:
+            - "./data/teamcity-data:/data/teamcity_server/datadir"
+            - "./data/teamcity-logs:/opt/teamcity/logs"
+
+    build-agent:
+        image: jetbrains/teamcity-agent:latest
+        restart: unless-stopped
+        depends_on:
+            - app
+        networks:
+            - net
+
+    db:
+        image: postgres
+        restart: on-failure
+        networks:
+            - net
+        volumes:
+            - "./data/db:/var/lib/postgresql/data"
+        environment:
+            - "POSTGRES_USER=teamcity"
+            - "POSTGRES_PASSWORD=teamcity"
+
+networks:
+    net:
